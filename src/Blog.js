@@ -1,30 +1,69 @@
 import { Routes, Route } from "react-router-dom";
 import styled from "styled-components";
+import { Error, Header, Footer, Modal } from "./components";
+import { Authorization, Main, Registration } from "./pages";
+import { Users } from "./pages/users/users";
+import { Post } from "./pages/post/post";
+import { useLayoutEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setUser } from "./actions/set-user";
+import { ERROR } from "./constants";
 
-const Content = styled.div`
-  text-align: center;
+
+const AppColum = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 1000px;
+  min-height: 100%;
+  margin: 0 auto;
+  background-color: #fff;
+
+  position: relative;
 `;
 
-const Header = () => <div>Header</div>;
-const Footer = () => <div>Footer</div>;
+const Page = styled.div`
+  padding: 120px 0 20px;
+`;
 
 const Blog = () => {
+  const dispatch = useDispatch();
+  // При загрузке страницы проверяем, есть ли данные в sessionStorage
+
+  useLayoutEffect(() => {
+    const currentuserDataJSON = sessionStorage.getItem("userData");
+    if (!currentuserDataJSON) {
+      return;
+    }
+
+    const currentuserData = JSON.parse(currentuserDataJSON);
+
+    dispatch(
+      setUser({ ...currentuserData, roleId: Number(currentuserData.roleId) }) // Восстановление состояния в Redux store
+    );
+  }, [dispatch]);
+
   return (
-    <>
+    <AppColum>
       <Header />
-      <Content>
+      <Page>
         <Routes>
-          <Route path="/" element={<div>Главная</div>} />
-          <Route path="/login" element={<div>Авторизвция</div>} />
-          <Route path="/register" element={<div>Регистрация</div>} />
-          <Route path="/users" element={<div>Пользователи</div>} />
-          <Route path="/post" element={<div>Новая статья</div>} />
-          <Route path="/postId" element={<div>Статья</div>} />
-          <Route path="*" element={<div>Ошибка</div>} />
+          <Route path="/" element={<Main />} />
+          <Route path="/login" element={<Authorization />} />
+          <Route path="/register" element={<Registration />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/post" element={<Post />} />
+          <Route path="/post/:id" element={<Post />} />
+          <Route path="/post/:id/edit" element={<Post />} />
+          <Route
+            path="*"
+            element={<Error error={ERROR.PAGE_NOT_EXIST} />}
+          />
         </Routes>
-      </Content>
+      </Page>
       <Footer />
-    </>
+      <Modal />
+    </AppColum>
   );
 };
 
